@@ -21,38 +21,40 @@ class Calendar(object):
     def __init__(self):
         self._holidays = {}
 
-    def get_fixed_holidays(self, year):
+    def get_fixed_holidays(self, year, getmonth=None):
         """Return the fixed days according to the FIXED_HOLIDAYS class property
         """
         days = []
         for month, day, label in self.FIXED_HOLIDAYS:
-            days.append((date(year, month, day), label))
+            if (getmonth != None and getmonth == month) or getmonth == None:
+                    days.append((date(year, month, day), label))
         return days
 
-    def get_variable_days(self, year):
+    def get_variable_days(self, year, getmonth):
         return []
 
-    def get_calendar_holidays(self, year):
+    def get_calendar_holidays(self, year, month=None):
         """Get calendar holidays.
         If you want to override this, please make sure that it **must** return
         a list of tuples (date, holiday_name)."""
-        return self.get_fixed_holidays(year) + self.get_variable_days(year)
+        return self.get_fixed_holidays(year, month) + self.get_variable_days(year, month)
 
-    def holidays(self, year=None):
+    def holidays(self, year=None, month=None):
         """Computes holidays (non-working days) for a given year.
         Return a 2-item tuple, composed of the date and a label."""
         if not year:
             year = date.today().year
-
-        if year in self._holidays:
-            return self._holidays[year]
+        
+        _holidays_id = year if month == None else str(year) + str(month)
+        if _holidays_id in self._holidays:
+            return self._holidays[_holidays_id]
 
         # Here we process the holiday specific calendar
-        temp_calendar = tuple(self.get_calendar_holidays(year))
+        temp_calendar = tuple(self.get_calendar_holidays(year, month))
 
         # it is sorted
-        self._holidays[year] = sorted(temp_calendar)
-        return self._holidays[year]
+        self._holidays[_holidays_id] = sorted(temp_calendar)
+        return self._holidays[_holidays_id]
 
     def get_holiday_label(self, day):
         """Return the label of the holiday, if the date is a holiday"""
